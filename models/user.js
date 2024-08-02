@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
   },
-  addharCardNumber: {
+  aadharCardNumber: {
     type: Number,
     require: true,
     unique: true,
