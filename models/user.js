@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 // Define the person schema
 const userSchema = new mongoose.Schema({
@@ -26,7 +27,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
   },
   password: {
-    type: Number,
+    type: String,
     required: true,
   },
   role: {
@@ -34,9 +35,30 @@ const userSchema = new mongoose.Schema({
     enum: ["voter", "admin"],
     default: "voter",
   },
-  isVoted:{
+  isVoted: {
     type: Boolean,
-    default: false
+    default: false,
+  },
+});
+
+userSchema.pre("save", async function (next) {
+  const user = this;
+
+  //Hash th e password only if it has been modified (or is new)
+  if (!user.isModified("password")) return next();
+
+  try {
+    //hash password generation
+    const salt = await bcrypt.genSalt(10);
+
+    //hash password
+    const hashedPassword = await bcrypt.hash(user.password, salt);
+
+    //Override the plain password with the hashed one
+    user.password = hashedPassword;
+    next();
+  } catch (error) {
+    return next(error);
   }
 });
 
